@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thermal Comfort Survey</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #ecf0f1;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Header Styling */
+        .header {
+            display: flex;
+            background: linear-gradient(to right, #2ecc71, #16a085);
+            color: white;
+            text-align: center;
+            padding: 15px;
+            font-size: 22px;
+            font-weight: bold;
+        }
+
+        /* Navigation Bar */
+        .navbar {
+            display: flex;
+            justify-content: flex-end;
+            background: linear-gradient(to right, #2ecc71, #16a085);
+            padding: 10px 20px;
+        }
+
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            margin-left: 20px;
+            font-size: 16px;
+        }
+
+        .navbar a:hover {
+            text-decoration: underline;
+        }
+
+        /* Centered Form Box */
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 90vh;
+        }
+
+        .form-box {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+            width: 350px;
+            text-align: center;
+        }
+
+        .form-box h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        /* Form Styling */
+        .form-group {
+            text-align: left;
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            font-size: 14px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        /* Button Styling */
+        .submit-btn {
+            background: linear-gradient(to right, #2ecc71, #16a085);
+            color: white;
+            border: none;
+            padding: 12px;
+            width: 100%;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .submit-btn:hover {
+            background: #16a085;
+        }
+
+        /* Result Display */
+        .result-box {
+            margin-top: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            padding: 10px;
+            border-radius: 5px;
+            display: none;
+        }
+
+        .comfortable { color: green; }
+        .hot { color: red; }
+        .uncomfortable { color: orange; }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <div class="header">
+        THERMAL COMFORT PREDICTOR
+    </div>
+
+    <!-- Navigation -->
+    <div class="navbar">
+        <a href="#">Dashboard</a>
+        <a href="#">Survey</a>
+        <a href="#">Reports</a>
+    </div>
+
+    <!-- Form Section -->
+    <div class="container">
+        <div class="form-box">
+            <h2>Thermal Comfort Survey</h2>
+            <form id="comfortForm">
+                <div class="form-group">
+                    <label>Temperature (°C)</label>
+                    <input type="number" id="temperature" placeholder="Enter temperature" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Humidity (%)</label>
+                    <input type="number" id="humidity" placeholder="Enter humidity" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Air Speed (m/s)</label>
+                    <input type="number" id="airSpeed" placeholder="Enter air speed" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Clothing Level (clo)</label>
+                    <select id="clothing">
+                        <option value="0.5">Light summer clothing (0.5 clo)</option>
+                        <option value="1.0">Winter clothing (1.0 clo)</option>
+                        <option value="1.5">Heavy winter clothing (1.5 clo)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Activity Level (met)</label>
+                    <select id="activity">
+                        <option value="1.0">Resting (1.0 met)</option>
+                        <option value="1.5">Light activity (1.5 met)</option>
+                        <option value="2.0">Moderate activity (2.0 met)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Mean Radiant Temperature (MRT) (°C)</label>
+                    <input type="number" id="mrt" placeholder="Enter MRT" required>
+                </div>
+
+                <button type="button" class="submit-btn" onclick="predictComfort()">Predict Comfort Level</button>
+
+                <!-- Result Display -->
+                <div id="result" class="result-box"></div>
+            </form>
+        </div>
+    </div>
+    
+    <script>
+        function predictComfort() {
+            // Get user inputs
+            let temperature = document.getElementById("temperature").value;
+            let humidity = document.getElementById("humidity").value;
+            let air_speed = document.getElementById("airSpeed").value;
+            let clothing = document.getElementById("clothing").value;
+            let activity = document.getElementById("activity").value;
+            let mrt = document.getElementById("mrt").value;
+
+            // Validate inputs
+            if (!temperature || !humidity || !air_speed || !clothing || !activity || !mrt) {
+                alert("Please fill in all fields.");
+                return;
+            }
+
+            let requestData = { temperature, humidity, air_speed, clothing, activity, mrt };
+            console.log("Sending Data:", requestData); // Debugging
+
+            fetch("http://127.0.0.1:5001/predict", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(requestData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log("Response:", data);
+                let resultBox = document.getElementById("result");
+                resultBox.innerHTML = "Thermal Comfort: " + data.comfort_level;
+                resultBox.style.display = "block";
+
+                // Apply color based on comfort level
+                if (data.comfort_level === "Comfortable") {
+                    resultBox.className = "result-box comfortable";
+                } else if (data.comfort_level === "Hot") {
+                    resultBox.className = "result-box hot";
+                } else if (data.comfort_level === "Uncomfortable") {
+                    resultBox.className = "result-box uncomfortable";
+                } else {
+                    resultBox.className = "result-box";
+                }
+            })
+            .catch(error => console.error("Error:", error));
+        }
+    </script>
+
+</body>
+</html>
